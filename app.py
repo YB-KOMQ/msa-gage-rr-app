@@ -52,7 +52,7 @@ html, body, [class*="css"] {
 
 .block-container {
     max-width: 1320px;
-    padding-top: 1.2rem;
+    padding-top: 6.4rem;
     padding-bottom: 3rem;
 }
 
@@ -76,6 +76,32 @@ section[data-testid="stSidebar"] {
 .logo-side img {
     width: 100%;
     display: block;
+}
+
+.fixed-titlebar {
+    position: fixed;
+    top: 0;
+    left: 18rem;
+    right: 0;
+    z-index: 9999;
+    padding: 18px 42px;
+    background: rgba(3, 14, 28, .92);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(147, 197, 253, .18);
+}
+
+.fixed-title {
+    color: white;
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -0.8px;
+}
+
+.fixed-sub {
+    color: #93c5fd;
+    font-size: 13px;
+    font-weight: 800;
+    margin-top: 4px;
 }
 
 .menu-item {
@@ -113,30 +139,7 @@ section[data-testid="stSidebar"] {
     line-height: 1.7;
 }
 
-.topbar {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 18px;
-}
-
-.top-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    color: #22d3ee;
-    border: 1px solid rgba(34, 211, 238, .45);
-    border-radius: 999px;
-    padding: 10px 16px;
-    font-weight: 900;
-    font-size: 13px;
-    background: rgba(5, 20, 42, .78);
-}
-
 .hero {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 34px;
-    align-items: center;
     padding: 38px;
     border-radius: 28px;
     border: 1px solid rgba(147, 197, 253, .28);
@@ -144,18 +147,6 @@ section[data-testid="stSidebar"] {
         linear-gradient(135deg, rgba(15, 40, 74, .96), rgba(8, 25, 48, .94));
     box-shadow: 0 28px 90px rgba(0,0,0,.34);
     margin-bottom: 26px;
-}
-
-.hero-logo {
-    background: white;
-    border-radius: 22px;
-    padding: 24px;
-    box-shadow: inset 0 0 0 1px rgba(15,23,42,.06), 0 18px 45px rgba(0,0,0,.25);
-}
-
-.hero-logo img {
-    width: 100%;
-    display: block;
 }
 
 .hero-title {
@@ -288,23 +279,18 @@ input, textarea {
     padding-top: 22px;
     font-weight: 700;
 }
-
-@media (max-width: 900px) {
-    .hero {
-        grid-template-columns: 1fr;
-    }
-    .hero-logo {
-        max-width: 320px;
-    }
-    .hero-title {
-        font-size: 34px;
-    }
-}
 </style>
 """, unsafe_allow_html=True)
 
 
-# Sidebar
+st.markdown("""
+<div class="fixed-titlebar">
+    <div class="fixed-title">KOMQ MSA Gage R&R 분석 시스템</div>
+    <div class="fixed-sub">Made by KOMQ · Quality · Data · Innovation</div>
+</div>
+""", unsafe_allow_html=True)
+
+
 if logo_b64:
     st.sidebar.markdown(
         f'<div class="logo-side"><img src="data:image/jpeg;base64,{logo_b64}"></div>',
@@ -335,41 +321,23 @@ st.sidebar.markdown("""
 """, unsafe_allow_html=True)
 
 
-# Top
 st.markdown("""
-<div class="topbar">
-    <div class="top-badge">🛡️ Made by KOMQ · Quality · Data · Innovation</div>
-</div>
-""", unsafe_allow_html=True)
-
-
-# Hero
-if logo_b64:
-    logo_html = f'<div class="hero-logo"><img src="data:image/jpeg;base64,{logo_b64}"></div>'
-else:
-    logo_html = '<div class="hero-logo"><b>KOMQ</b></div>'
-
-st.markdown(f"""
 <div class="hero">
-    {logo_html}
-    <div>
-        <div class="hero-title">KOMQ MSA Gage R&R<br>분석 시스템</div>
-        <div class="hero-sub">
-            엑셀 업로드 또는 데이터 붙여넣기만으로 ANOVA 기반 Gage R&R 분석,<br>
-            Full / Reduced 모델 선택, 분산 성분 분석, Run Chart 생성을 자동 수행합니다.
-        </div>
-        <div class="hero-meta">
-            <div class="meta-chip">ANOVA Gage R&R</div>
-            <div class="meta-chip">Minitab Style Output</div>
-            <div class="meta-chip">Run Chart Auto</div>
-            <div class="meta-chip">KOMQ Quality System</div>
-        </div>
+    <div class="hero-title">KOMQ MSA Gage R&R<br>분석 시스템</div>
+    <div class="hero-sub">
+        엑셀 업로드 또는 데이터 붙여넣기만으로 ANOVA 기반 Gage R&R 분석,<br>
+        Full / Reduced 모델 선택, 분산 성분 분석, Run Chart 생성을 자동 수행합니다.
+    </div>
+    <div class="hero-meta">
+        <div class="meta-chip">ANOVA Gage R&R</div>
+        <div class="meta-chip">Minitab Style Output</div>
+        <div class="meta-chip">Run Chart Auto</div>
+        <div class="meta-chip">KOMQ Quality System</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 
-# Input card
 st.markdown("""
 <div class="input-card">
     <div class="input-head">
