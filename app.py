@@ -7,454 +7,202 @@ from io import StringIO
 import pandas as pd
 import streamlit as st
 
-
+# ------------------------
+# 경로 설정
+# ------------------------
 BASE_DIR = Path(__file__).parent
 ENGINE_PATH = BASE_DIR / "MSA_FULL_MINITAB_ENGINE_STABLE_FINAL.py"
 LOGO_PATH = BASE_DIR / "komq_logo.jpg"
 OUTPUT_DIR = BASE_DIR / "outputs"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
+# ------------------------
+# 엔진 로딩
+# ------------------------
 spec = importlib.util.spec_from_file_location("msa_engine", ENGINE_PATH)
 msa = importlib.util.module_from_spec(spec)
 sys.modules["msa_engine"] = msa
 spec.loader.exec_module(msa)
 
-
+# ------------------------
+# 유틸
+# ------------------------
 def image_base64(path: Path) -> str:
     if not path.exists():
         return ""
     return base64.b64encode(path.read_bytes()).decode("utf-8")
 
-
 logo_b64 = image_base64(LOGO_PATH)
 
-st.set_page_config(
-    page_title="KOMQ MSA Gage R&R 분석 시스템",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+# ------------------------
+# 기본 설정
+# ------------------------
+st.set_page_config(layout="wide")
 
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap');
-
-html, body, [class*="css"] {
-    font-family: 'Noto Sans KR', sans-serif;
-}
-
-.stApp {
-    background:
-        radial-gradient(circle at 80% 10%, rgba(0, 180, 255, 0.18), transparent 30%),
-        linear-gradient(135deg, #06111f 0%, #071a31 48%, #030914 100%);
-    color: #f8fafc;
-}
-
-.block-container {
-    max-width: 1320px;
-    padding-top: 6.4rem;
-    padding-bottom: 3rem;
-}
-
-header[data-testid="stHeader"] {
-    background: transparent;
-}
-
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #07182d 0%, #03101f 100%);
-    border-right: 1px solid rgba(96, 165, 250, 0.18);
-}
-
-.logo-side {
-    background: white;
-    border-radius: 16px;
-    padding: 12px;
-    margin: 16px 8px 28px 8px;
-    box-shadow: 0 16px 35px rgba(0,0,0,.22);
-}
-
-.logo-side img {
-    width: 100%;
-    display: block;
-}
-
-.fixed-titlebar {
-    position: fixed;
-    top: 0;
-    left: 18rem;
-    right: 0;
-    z-index: 9999;
-    padding: 18px 42px;
-    background: rgba(3, 14, 28, .92);
-    backdrop-filter: blur(18px);
-    border-bottom: 1px solid rgba(147, 197, 253, .18);
-}
-
-.fixed-title {
-    color: white;
-    font-size: 30px;
-    font-weight: 900;
-    letter-spacing: -0.8px;
-}
-
-.fixed-sub {
-    color: #93c5fd;
-    font-size: 13px;
-    font-weight: 800;
-    margin-top: 4px;
-}
-
-.menu-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: #dbeafe;
-    font-size: 16px;
-    font-weight: 800;
-    padding: 14px 16px;
-    border-radius: 14px;
-    margin: 8px 6px;
-}
-
-.menu-active {
-    background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
-    box-shadow: 0 16px 36px rgba(37, 99, 235, .32);
-}
-
-.feature-box {
-    margin: 34px 6px 0 6px;
-    padding: 18px;
-    border-radius: 18px;
-    border: 1px solid rgba(147, 197, 253, .25);
-    background: rgba(15, 38, 70, .68);
-    color: #dbeafe;
-    line-height: 1.9;
-    font-size: 14px;
-}
-
-.sidebar-footer {
-    margin: 44px 8px 12px 8px;
-    color: #93a4bb;
-    font-size: 12px;
-    line-height: 1.7;
-}
-
-.hero {
-    padding: 38px;
-    border-radius: 28px;
-    border: 1px solid rgba(147, 197, 253, .28);
-    background:
-        linear-gradient(135deg, rgba(15, 40, 74, .96), rgba(8, 25, 48, .94));
-    box-shadow: 0 28px 90px rgba(0,0,0,.34);
-    margin-bottom: 26px;
-}
-
-.hero-title {
-    color: white;
-    font-size: 46px;
-    line-height: 1.16;
-    letter-spacing: -1.4px;
-    font-weight: 900;
-    margin-bottom: 18px;
-}
-
-.hero-sub {
-    color: #b7c7dc;
-    font-size: 18px;
-    line-height: 1.75;
-    font-weight: 600;
-}
-
-.hero-meta {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 26px;
-}
-
-.meta-chip {
-    border: 1px solid rgba(147, 197, 253, .22);
-    background: rgba(15, 23, 42, .45);
-    color: #bfdbfe;
-    border-radius: 999px;
-    padding: 8px 13px;
-    font-weight: 800;
-    font-size: 13px;
-}
-
-.input-card {
-    padding: 28px 30px;
-    border-radius: 24px;
-    border: 1px solid rgba(147, 197, 253, .24);
-    background: linear-gradient(135deg, rgba(13, 38, 70, .92), rgba(6, 23, 43, .91));
-    margin-bottom: 22px;
-}
-
-.input-head {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
-
-.icon-circle {
-    width: 60px;
-    height: 60px;
-    border-radius: 18px;
-    background: linear-gradient(135deg, #2563eb, #06b6d4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    box-shadow: 0 16px 36px rgba(14,165,233,.28);
-}
-
-.card-title {
-    color: white;
-    font-size: 26px;
-    font-weight: 900;
-    margin-bottom: 6px;
-}
-
-.card-desc {
-    color: #b7c7dc;
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.form-panel {
-    padding: 24px 28px 28px 28px;
-    border-radius: 24px;
-    border: 1px solid rgba(147, 197, 253, .18);
-    background: rgba(3, 14, 28, .32);
-}
-
-label, .stRadio label {
-    color: #f8fafc !important;
-    font-weight: 800 !important;
-}
-
-div[data-testid="stFileUploader"] {
-    background: rgba(15, 23, 42, .78);
-    border: 1px dashed rgba(147, 197, 253, .42);
-    border-radius: 18px;
-    padding: 18px;
-}
-
-input, textarea {
-    background-color: rgba(30, 41, 59, .9) !important;
-    color: white !important;
-    border-radius: 14px !important;
-    border: 1px solid rgba(148, 163, 184, .22) !important;
-}
-
-.stButton > button {
-    background: linear-gradient(135deg, #2563eb, #06b6d4);
-    color: white;
-    border: none;
-    border-radius: 16px;
-    padding: .85rem 1.55rem;
-    font-size: 18px;
-    font-weight: 900;
-    box-shadow: 0 18px 45px rgba(14, 165, 233, .28);
-}
-
-.stButton > button:hover {
-    background: linear-gradient(135deg, #1d4ed8, #0891b2);
-    color: white;
-}
-
-.result-card {
-    background: rgba(7, 23, 43, .88);
-    border: 1px solid rgba(147, 197, 253, .22);
-    border-radius: 22px;
-    padding: 24px;
-    margin-top: 24px;
-}
-
-.footer {
-    border-top: 1px solid rgba(147, 197, 253, .2);
-    text-align: center;
-    color: #9fb0c6;
-    margin-top: 34px;
-    padding-top: 22px;
-    font-weight: 700;
-}
-</style>
-""", unsafe_allow_html=True)
-
-
-st.markdown("""
-<div class="fixed-titlebar">
-    <div class="fixed-title">KOMQ MSA Gage R&R 분석 시스템</div>
-    <div class="fixed-sub">Made by KOMQ · Quality · Data · Innovation</div>
-</div>
-""", unsafe_allow_html=True)
-
-
+# ------------------------
+# 사이드바 메뉴
+# ------------------------
 if logo_b64:
-    st.sidebar.markdown(
-        f'<div class="logo-side"><img src="data:image/jpeg;base64,{logo_b64}"></div>',
-        unsafe_allow_html=True,
-    )
-else:
-    st.sidebar.markdown("## KOMQ")
+    st.sidebar.image(LOGO_PATH, use_container_width=True)
 
-st.sidebar.markdown("""
-<div class="menu-item menu-active">🏠 홈</div>
-<div class="menu-item">📈 분석 결과</div>
-<div class="menu-item">📋 사용 가이드</div>
-<div class="menu-item">ℹ️ 도움말</div>
-
-<div class="feature-box">
-    ⭐ <b>MSA 전문가가 만든<br>Gage R&R 분석 솔루션</b><br><br>
-    ✅ ANOVA 기반 정확한 분석<br>
-    ✅ Full / Reduced 모델 자동 선택<br>
-    ✅ Run Chart 자동 생성<br>
-    ✅ Minitab 형식 결과 제공
-</div>
-
-<div class="sidebar-footer">
-    © 2026 한국경영품질연구원(KOMQ)<br>
-    MSA Analysis System v1.0<br>
-    All rights reserved.
-</div>
-""", unsafe_allow_html=True)
-
-
-st.markdown("""
-<div class="hero">
-    <div class="hero-title">KOMQ MSA Gage R&R<br>분석 시스템</div>
-    <div class="hero-sub">
-        엑셀 업로드 또는 데이터 붙여넣기만으로 ANOVA 기반 Gage R&R 분석,<br>
-        Full / Reduced 모델 선택, 분산 성분 분석, Run Chart 생성을 자동 수행합니다.
-    </div>
-    <div class="hero-meta">
-        <div class="meta-chip">ANOVA Gage R&R</div>
-        <div class="meta-chip">Minitab Style Output</div>
-        <div class="meta-chip">Run Chart Auto</div>
-        <div class="meta-chip">KOMQ Quality System</div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-
-st.markdown("""
-<div class="input-card">
-    <div class="input-head">
-        <div class="icon-circle">⇧</div>
-        <div>
-            <div class="card-title">데이터 입력</div>
-            <div class="card-desc">CSV, XLSX, XLS 파일을 업로드하거나 엑셀 데이터를 그대로 붙여넣으세요.</div>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown('<div class="form-panel">', unsafe_allow_html=True)
-
-input_mode = st.radio(
-    "입력 방식 선택",
-    ["엑셀/CSV 업로드", "데이터 붙여넣기"],
-    horizontal=True
+page = st.sidebar.radio(
+    "메뉴",
+    ["홈", "분석 결과", "사용 가이드", "도움말"],
+    label_visibility="collapsed"
 )
 
-tolerance_text = st.text_input(
-    "공차 Tolerance 입력 - 선택사항",
-    placeholder="예) 10 또는 0.1"
-)
+# ------------------------
+# 상태 저장 초기화
+# ------------------------
+if "result_text" not in st.session_state:
+    st.session_state["result_text"] = None
+if "chart_path" not in st.session_state:
+    st.session_state["chart_path"] = None
 
-df = None
+# =========================================================
+# 🏠 홈
+# =========================================================
+if page == "홈":
 
-if input_mode == "엑셀/CSV 업로드":
-    uploaded_file = st.file_uploader(
-        "파일 업로드",
-        type=["csv", "xlsx", "xls"]
+    st.title("KOMQ MSA Gage R&R 분석 시스템")
+    st.caption("엑셀 업로드 또는 붙여넣기로 ANOVA 기반 Gage R&R 분석 수행")
+
+    input_mode = st.radio(
+        "입력 방식",
+        ["엑셀/CSV 업로드", "데이터 붙여넣기"],
+        horizontal=True
     )
 
-    if uploaded_file is not None:
-        file_path = OUTPUT_DIR / uploaded_file.name
-        file_path.write_bytes(uploaded_file.getvalue())
+    tolerance_text = st.text_input("공차 (선택)")
 
-        if uploaded_file.name.lower().endswith(".csv"):
-            df = pd.read_csv(file_path)
-        else:
-            df = pd.read_excel(file_path)
+    df = None
 
-else:
-    pasted = st.text_area(
-        "엑셀에서 복사한 데이터를 그대로 붙여넣으세요",
-        height=260,
-        placeholder="시료\t측정자\t측정값\n1\t1\t0.29\n2\t1\t0.41\n3\t1\t0.64"
-    )
+    # 파일 업로드
+    if input_mode == "엑셀/CSV 업로드":
+        uploaded_file = st.file_uploader("파일 업로드", type=["csv", "xlsx", "xls"])
 
-    if pasted.strip():
-        df = pd.read_csv(StringIO(pasted), sep=None, engine="python")
+        if uploaded_file:
+            file_path = OUTPUT_DIR / uploaded_file.name
+            file_path.write_bytes(uploaded_file.getvalue())
 
-if df is not None:
-    st.markdown("### 입력 데이터 미리보기")
-    st.dataframe(df, use_container_width=True)
+            if uploaded_file.name.endswith(".csv"):
+                df = pd.read_csv(file_path)
+            else:
+                df = pd.read_excel(file_path)
 
-run = st.button("🚀 Gage R&R 분석 실행")
+    # 붙여넣기
+    else:
+        pasted = st.text_area("데이터 붙여넣기")
 
-st.markdown('</div>', unsafe_allow_html=True)
+        if pasted.strip():
+            df = pd.read_csv(StringIO(pasted), sep=None, engine="python")
+
+    # 미리보기
+    if df is not None:
+        st.dataframe(df, use_container_width=True)
+
+    # 실행 버튼
+    if st.button("🚀 분석 실행"):
+
+        if df is None:
+            st.error("데이터 없음")
+            st.stop()
+
+        try:
+            tolerance = float(tolerance_text) if tolerance_text else None
+
+            chart_path = OUTPUT_DIR / "gage_run_chart.png"
+
+            result = msa.analyze_gage_rr_with_chart(
+                df,
+                tolerance=tolerance,
+                chart_path=chart_path
+            )
+
+            result_text = result.to_minitab_text()
+
+            # 🔥 상태 저장
+            st.session_state["result_text"] = result_text
+            st.session_state["chart_path"] = result.chart_path
+
+            st.success("분석 완료")
+            st.markdown(result_text)
+
+            if result.chart_path:
+                st.image(result.chart_path)
+
+        except Exception as e:
+            st.error("분석 실패")
+            st.code(str(e))
 
 
-if run:
-    if df is None:
-        st.error("먼저 데이터를 업로드하거나 붙여넣으세요.")
-        st.stop()
+# =========================================================
+# 📊 분석 결과
+# =========================================================
+elif page == "분석 결과":
 
-    try:
-        tolerance = None
-        if tolerance_text.strip():
-            tolerance = float(tolerance_text)
+    st.title("📊 분석 결과")
 
-        chart_path = OUTPUT_DIR / "gage_run_chart.png"
+    if st.session_state["result_text"]:
 
-        result = msa.analyze_gage_rr_with_chart(
-            df,
-            tolerance=tolerance,
-            chart_path=chart_path
-        )
+        st.markdown(st.session_state["result_text"])
 
-        result_text = result.to_minitab_text()
+        if st.session_state["chart_path"]:
+            st.image(st.session_state["chart_path"])
 
-        st.success("분석 완료")
+    else:
+        st.info("먼저 홈에서 분석을 실행하세요.")
 
-        st.markdown('<div class="result-card">', unsafe_allow_html=True)
-        st.markdown("## 📊 분석 결과")
-        st.markdown(result_text)
-        st.markdown("</div>", unsafe_allow_html=True)
 
-        if result.chart_path:
-            st.markdown('<div class="result-card">', unsafe_allow_html=True)
-            st.markdown("## 📈 Gage Run Chart")
-            st.image(result.chart_path)
+# =========================================================
+# 📋 사용 가이드
+# =========================================================
+elif page == "사용 가이드":
 
-            with open(result.chart_path, "rb") as f:
-                st.download_button(
-                    "Run Chart PNG 다운로드",
-                    data=f,
-                    file_name="gage_run_chart.png",
-                    mime="image/png"
-                )
-            st.markdown("</div>", unsafe_allow_html=True)
+    st.title("📋 사용 가이드")
 
-        st.download_button(
-            "분석 결과 Markdown 다운로드",
-            data=result_text,
-            file_name="msa_result.md",
-            mime="text/markdown"
-        )
+    st.markdown("""
+### ✔ 데이터 형식
 
-    except Exception as e:
-        st.error("분석 실패")
-        st.code(str(e))
+| 항목 | 컬럼명 예시 |
+|---|---|
+| 시료 | Part / 시료 |
+| 측정자 | Operator |
+| 측정값 | Measurement |
+| 반복 | Trial |
 
-st.markdown("""
-<div class="footer">
-    🏢 한국경영품질연구원(KOMQ) &nbsp;&nbsp; | &nbsp;&nbsp;
-    MSA Analysis System v1.0 &nbsp;&nbsp; | &nbsp;&nbsp;
-    © 2026 All rights reserved.
-</div>
-""", unsafe_allow_html=True)
+### ✔ 규칙
+- Long format 사용
+- 균형 데이터만 가능
+- 공차는 숫자로 입력
+
+### ✔ 파일 지원
+- CSV
+- XLSX
+- XLS
+""")
+
+
+# =========================================================
+# ℹ️ 도움말
+# =========================================================
+elif page == "도움말":
+
+    st.title("ℹ️ 도움말")
+
+    st.markdown("""
+### ❗ 자주 발생 오류
+
+- 컬럼명이 인식 안됨
+- 데이터 불균형
+- 공차 문자 입력
+
+### ✔ 해결 방법
+
+- 컬럼명을 Part / Operator / Measurement로 맞추기
+- 각 시료 동일 반복수 유지
+- 공차 숫자 입력
+
+### 📞 문의
+KOMQ MSA 시스템 관리자
+""")
