@@ -19,7 +19,7 @@ sys.modules["msa_engine"] = msa
 spec.loader.exec_module(msa)
 
 st.set_page_config(
-    page_title="MSA Gage R&R 분석 에이전트",
+    page_title="KOMQ MSA Gage R&R 분석 시스템",
     page_icon="📊",
     layout="wide"
 )
@@ -40,7 +40,7 @@ html, body, [class*="css"] {
 }
 
 .block-container {
-    padding-top: 0.8rem;
+    padding-top: 1rem;
     padding-bottom: 3rem;
     max-width: 1450px;
 }
@@ -109,6 +109,7 @@ section[data-testid="stSidebar"] {
 }
 
 .hero {
+    clear: both;
     margin-top: 58px;
     background:
         linear-gradient(135deg, rgba(17, 39, 70, 0.96), rgba(8, 25, 48, 0.92));
@@ -116,6 +117,29 @@ section[data-testid="stSidebar"] {
     border-radius: 24px;
     padding: 38px 44px;
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+}
+
+.hero-inner {
+    display: flex;
+    align-items: center;
+    gap: 34px;
+}
+
+.hero-logo-box {
+    width: 260px;
+    min-width: 260px;
+    background: white;
+    border-radius: 16px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-logo-box img {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
 .hero-title {
@@ -131,12 +155,6 @@ section[data-testid="stSidebar"] {
     font-size: 18px;
     line-height: 1.75;
     font-weight: 500;
-}
-
-.hero-logo {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
 }
 
 .input-card {
@@ -256,13 +274,13 @@ st.sidebar.markdown("""
 </div>
 
 <div class="sidebar-footer">
-    © 2024 한국경영품질연구원(KOMQ)<br>
+    © 2026 한국경영품질연구원(KOMQ)<br>
+    MSA Analysis System v1.0<br>
     All rights reserved.
 </div>
 """, unsafe_allow_html=True)
 
 
-# Top badge
 st.markdown("""
 <div class="top-badge">
     🛡️ Made by KOMQ<br>
@@ -271,27 +289,29 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# Hero
-hero_left, hero_right = st.columns([1.7, 1])
+# Hero: 로고와 텍스트 수평 정렬
+logo_html = ""
+if LOGO_PATH.exists():
+    logo_html = f'<div class="hero-logo-box"><img src="app/static-placeholder"></div>'
 
-with hero_left:
-    st.markdown("""
-    <div class="hero">
-        <div class="hero-title">MSA Gage R&R 분석 에이전트</div>
-        <div class="hero-sub">
-            엑셀 업로드 또는 데이터 붙여넣기만으로 ANOVA 기반<br>
-            Gage R&R 분석과 Run Chart를 생성합니다.
-        </div>
+st.markdown('<div class="hero"><div class="hero-inner">', unsafe_allow_html=True)
+
+if LOGO_PATH.exists():
+    st.markdown('<div class="hero-logo-box">', unsafe_allow_html=True)
+    st.image(str(LOGO_PATH), use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown("""
+<div>
+    <div class="hero-title">KOMQ MSA Gage R&R 분석 시스템</div>
+    <div class="hero-sub">
+        엑셀 업로드 또는 데이터 붙여넣기만으로 ANOVA 기반<br>
+        Gage R&R 분석과 Run Chart를 생성합니다.
     </div>
-    """, unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
 
-with hero_right:
-    st.markdown('<div class="hero hero-logo">', unsafe_allow_html=True)
-    if LOGO_PATH.exists():
-        st.image(str(LOGO_PATH), use_container_width=True)
-    else:
-        st.markdown("### KOMQ")
-    st.markdown("</div>", unsafe_allow_html=True)
+st.markdown('</div></div>', unsafe_allow_html=True)
 
 
 # Input card
@@ -408,6 +428,7 @@ if run:
 st.markdown("""
 <div class="footer">
     🏢 한국경영품질연구원(KOMQ) &nbsp;&nbsp; | &nbsp;&nbsp;
-    Quality · Data · Innovation
+    MSA Analysis System v1.0 &nbsp;&nbsp; | &nbsp;&nbsp;
+    © 2026 All rights reserved.
 </div>
 """, unsafe_allow_html=True)
